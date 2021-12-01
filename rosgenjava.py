@@ -67,12 +67,16 @@ class Service(Elem):
 
 
 class Message(Elem):
-    def __init__(self, field_lst=[], const_lst=[]):
-        self.field_lst = field_lst  # List of Field
-        self.const_lst = const_lst  # List of Const
+    def __init__(self, field_const_lst):
+        for e in field_const_lst:
+            assert isinstance(e, Field) or isinstance(e, Const)
+
+        self._field_const_lst = field_const_lst
+        self.field_lst = [e for e in field_const_lst if isinstance(e, Field)]
+        self.const_lst = [e for e in field_const_lst if isinstance(e, Const)]
 
     def dump(self):
-        return ''.join([f.dump() for f in self.field_lst] + [c.dump() for c in self.const_lst])
+        return ''.join([e.dump() for e in self._field_const_lst])
 
     def __iter__(self):
         return iter(self.field_lst + self.const_lst)
@@ -258,9 +262,7 @@ def p_service_def(p):
 def p_message_def(p):
     """message_def : message_sent_lst"""
     sent_lst = p[1]
-    field_lst = [sent for sent in sent_lst if isinstance(sent, Field)]
-    const_lst = [sent for sent in sent_lst if isinstance(sent, Const)]
-    p[0] = Message(field_lst, const_lst)
+    p[0] = Message(sent_lst)
 
 
 def p_empty(p):
