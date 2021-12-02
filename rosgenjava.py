@@ -15,10 +15,10 @@ tokens = (
     'NUMBER',
     'STRING',
     'SEP',
+    'CONSTVAL',  # With the leading "="
     # 'COMMENT',
 
     # 'NEWLINE',
-    'EQUAL', 
     'LSQRTBR',
     'RSQRTBR',
 )
@@ -29,9 +29,9 @@ t_NUMBER = r'-?[0-9]*.?[0-9]+'
 t_STRING = r'".*"'
 t_SEP = r'---'
 t_ignore_COMMENT = r'\#.*'
+t_CONSTVAL = '=.*(\n|$)'
 
 t_ignore_NEWLINE = r'\n'
-t_EQUAL = r'='
 t_LSQRTBR = r'\['
 t_RSQRTBR = r'\]'
 
@@ -230,7 +230,7 @@ class Const(Elem):
 
     def dump(self):
         # string must use double quotes
-        val_lit = repr2(self.val)
+        val_lit = str(self.val)  # TODO: what if number consts ?
         return '{} {}={}\n'.format(self.typ.dump(), self.name, val_lit)
 
     def __iter__(self):
@@ -362,11 +362,18 @@ def p_type_name(p):
 
 
 def p_const_def(p):
-    """const_def : type_expr NAME EQUAL const_value"""
+    """const_def : type_expr NAME CONSTVAL"""
     name = p[2]
     typ = p[1]
-    val = p[4]
-    p[0] = Const(name, typ, val)
+
+    val_lit = p[3]
+    if val_lit.startswith('='):
+        val_lit = val_lit[1:]
+    val_lit = val_lit.strip('\n')
+    val_lit = val_lit.strip(' ')
+    val_lit = val_lit.strip('\b')
+
+    p[0] = Const(name, typ, val_lit)
 
 
 def p_const_value(p):
