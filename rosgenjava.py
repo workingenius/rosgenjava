@@ -52,6 +52,9 @@ class Elem:
         """iterate over all sub elements"""
         return iter([])
 
+    def __eq__(self, o):
+        return False
+
 
 class Service(Elem):
     def __init__(self, req, resp):
@@ -64,6 +67,11 @@ class Service(Elem):
     def __iter__(self):
         yield self.req
         yield self.resp
+
+    def __eq__(self, o):
+        return isinstance(o, Service) \
+                and self.req == o.req \
+                and self.resp == o.resp
 
 
 class Message(Elem):
@@ -81,6 +89,10 @@ class Message(Elem):
     def __iter__(self):
         return iter(self.field_lst + self.const_lst)
 
+    def __eq__(self, o):
+        return isinstance(o, Message) \
+                and self._field_const_lst == o._field_const_lst
+
 
 class Field(Elem):
     def __init__(self, name, typ):
@@ -92,6 +104,12 @@ class Field(Elem):
 
     def __iter__(self):
         yield self.typ
+
+    def __eq__(self, o):
+        return isinstance(o, Field) and \
+                self.name == o.name and \
+                self.type == o.type
+                
 
 
 class Typ(Elem):
@@ -130,6 +148,10 @@ class StdTyp(Typ):
     def dump(self):
         return self.typ_name
 
+    def __eq__(self, o):
+        return isinstance(o, StdTyp) \
+                and self.type_name == o.type_name
+
 
 class LocalTyp(Typ):
     def __init__(self, typ_name):
@@ -140,6 +162,10 @@ class LocalTyp(Typ):
 
     def dump(self):
         return self.typ_name
+
+    def __eq__(self, o):
+        return isinstance(o, LocalTyp) \
+                and self.type_name == o.type_name
 
 
 class PackageTyp(Typ):
@@ -159,6 +185,11 @@ class PackageTyp(Typ):
 
     def dump(self):
         return self.package_name + '/' + self.typ_name
+
+    def __eq__(self, o):
+        return isinstance(o, PackageTyp) \
+                and self.package_name == o.package_name \
+                and self.typ_name == o.typ_name
 
 
 class ArrayTyp(Typ):
@@ -185,6 +216,11 @@ class ArrayTyp(Typ):
     def __iter__(self):
         yield self.base_typ
 
+    def __eq__(self, o):
+        return isinstance(o, ArrayTyp) \
+                and self.base_typ == o.base_typ \
+                and self.length == o.length
+
 
 class Const(Elem):
     def __init__(self, name, typ, val):
@@ -199,6 +235,12 @@ class Const(Elem):
 
     def __iter__(self):
         yield self.typ
+
+    def __eq__(self, o):
+        return isinstance(o, Const) \
+                and self.name == o.name \
+                and self.typ == o.type \
+                and self.val == o.val
 
 
 def collect_java_dep(
